@@ -71,4 +71,5 @@ fabric.properties
 .php_cs.cache
 composer.lock
 composer.phar
+src/test.php
 vendor
