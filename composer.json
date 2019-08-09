@@ -1,0 +1,22 @@
+{
+  "name": "net-results/php-rest-api-utils",
+  "description": "Utils class for REST API authentication header generation.",
+  "minimum-stability": "dev",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Roberto Santini",
+      "email": "santini@netresults.it"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "NetResults\\": "src/NetResults/"
+    }
+  },
+  "require": {
+    "php": "^7.1.0",
+    "ext-curl": "*",
+    "ext-json": "*"
+  }
+}
