@@ -41,10 +41,11 @@ class RestApiUtils
      *
      * @param string $tenantDomain
      * @param string $pbxIpAddress
+     * @param bool   $useHttps
      *
      * @return string
      */
-    public function getTenantSalt(string $tenantDomain, string $pbxIpAddress): string
+    public function getTenantSalt(string $tenantDomain, string $pbxIpAddress, bool $useHttps = false): string
     {
         if (!function_exists('curl_init')) {
             throw new RuntimeException('cURL module not installed.');
@@ -58,7 +59,10 @@ class RestApiUtils
             return $this->tenantSalt;
         }
 
-        $urlString = 'http://'.$pbxIpAddress.sprintf(self::GET_TENANT_SALT_URL, $tenantDomain);
+        $urlString = ($useHttps ? 'https' : 'http').'://'.$pbxIpAddress.sprintf(
+                self::GET_TENANT_SALT_URL,
+                $tenantDomain
+            );
         $ch = curl_init($urlString);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json'));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
