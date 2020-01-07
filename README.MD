@@ -35,3 +35,13 @@ $restApiUtils = new RestApiUtils();
 $tenantSalt = $restApiUtils->getTenantSalt('default', 'your.kalliopepbx.address');
 echo $restApiUtils->generateAuthHeader('admin', 'default', 'admin', $tenantSalt)."\n";
 ```
+
+#### Esempi
+
+Nella catella `examples` sono presenti alcuni script di esmpio di utilizzo delle API. Ogni script ha delle `DEFINE` per la definizione dei parametri, modificarli secondo le proprie necessità per rendere gli esempi funzionanti nei propri scenari.
+
+```bash
+cd examples
+# Modificare i valori delle DEFINE negli script
+php <script.php>
+```
