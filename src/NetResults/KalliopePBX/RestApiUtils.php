@@ -93,8 +93,6 @@ class RestApiUtils
      * @param bool        $returnFullHeader
      *
      * @return string
-     *
-     * @throws Exception
      */
     public function generateAuthHeader(
         string $username,
@@ -115,7 +113,11 @@ class RestApiUtils
             return '';
         }
 
-        $createdDt = new DateTime(null, new DateTimeZone('UTC'));
+        try {
+            $createdDt = new DateTime(null, new DateTimeZone('UTC'));
+        } catch (Exception $e) {
+            return '';
+        }
         $created = $createdDt->format('Y-m-d\TH:i:s\Z');
 
         $nonce = md5($created.uniqid(mt_rand(), true));
