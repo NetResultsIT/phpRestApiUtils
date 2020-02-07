@@ -7,7 +7,6 @@
 use NetResults\KalliopePBX\RestApiUtils;
 
 require_once __DIR__.'/../vendor/autoload.php';
-require_once __DIR__.'/globals.php';
 
 class Utils
 {
@@ -25,15 +24,64 @@ class Utils
     private $restApiUtils;
 
     /**
+     * @var string
+     */
+    private $pbxIpAddress = '';
+
+    /**
+     * @var string
+     */
+    private $username = '';
+
+    /**
+     * @var string
+     */
+    private $password = '';
+
+    /**
+     * @var string
+     */
+    private $tenantDomain = '';
+
+    /**
      * @var array
      */
     private $lastRequestInfo = [];
 
     /**
      * Utils constructor.
+     *
+     * @param string $pbxIpAddress
+     * @param string $username
+     * @param string $password
+     * @param string $tenantDomain
      */
-    public function __construct()
+    public function __construct(string $pbxIpAddress = '', string $username = '', string $password = '', string $tenantDomain = '')
     {
+        if ('' !== $pbxIpAddress) {
+            $this->pbxIpAddress = $pbxIpAddress;
+        } elseif (defined('PBX_IP_ADDRESS')) {
+            $this->pbxIpAddress = PBX_IP_ADDRESS;
+        }
+
+        if ('' !== $username) {
+            $this->username = $username;
+        } elseif (defined('USERNAME')) {
+            $this->username = USERNAME;
+        }
+
+        if ('' !== $password) {
+            $this->password = $password;
+        } elseif (defined('PASSWORD')) {
+            $this->password = PASSWORD;
+        }
+
+        if ('' !== $tenantDomain) {
+            $this->tenantDomain = $tenantDomain;
+        } elseif (defined('TENANT_DOMAIN')) {
+            $this->tenantDomain = TENANT_DOMAIN;
+        }
+
         $this->restApiUtils = new RestApiUtils();
     }
 
@@ -44,7 +92,7 @@ class Utils
      */
     public function getFirmwareVersion(): string
     {
-        $requestUrl = sprintf(static::GET_FIRMWARE_VERSION_URL, PBX_IP_ADDRESS);
+        $requestUrl = sprintf(static::GET_FIRMWARE_VERSION_URL, $this->getPbxIpAddress());
         $fwVersion = $this->executeRequest($requestUrl);
 
         return false !== $fwVersion ? $fwVersion : '';
@@ -153,10 +201,10 @@ class Utils
         if (!$xAuthPresent) {
             // Authentication header not present, generate and add it.
             $headers[] = RestApiUtils::X_AUTHENTICATE_HEADER_NAME.': '.$this->restApiUtils->generateAuthHeader(
-                    USERNAME,
-                    TENANT_DOMAIN,
-                    PASSWORD,
-                    $this->restApiUtils->getTenantSalt(TENANT_DOMAIN, PBX_IP_ADDRESS),
+                    $this->getUsername(),
+                    $this->getTenantDomain(),
+                    $this->getPassword(),
+                    $this->restApiUtils->getTenantSalt($this->getTenantDomain(), $this->getPbxIpAddress()),
                     false
                 );
         }
@@ -170,5 +218,85 @@ class Utils
     public function getLastRequestInfo(): array
     {
         return $this->lastRequestInfo;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPbxIpAddress(): string
+    {
+        return $this->pbxIpAddress;
+    }
+
+    /**
+     * @param string $pbxIpAddress
+     *
+     * @return Utils
+     */
+    public function setPbxIpAddress(string $pbxIpAddress): Utils
+    {
+        $this->pbxIpAddress = $pbxIpAddress;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUsername(): string
+    {
+        return $this->username;
+    }
+
+    /**
+     * @param string $username
+     *
+     * @return Utils
+     */
+    public function setUsername(string $username): Utils
+    {
+        $this->username = $username;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    /**
+     * @param string $password
+     *
+     * @return Utils
+     */
+    public function setPassword(string $password): Utils
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTenantDomain(): string
+    {
+        return $this->tenantDomain;
+    }
+
+    /**
+     * @param string $tenantDomain
+     *
+     * @return Utils
+     */
+    public function setTenantDomain(string $tenantDomain): Utils
+    {
+        $this->tenantDomain = $tenantDomain;
+
+        return $this;
     }
 }
