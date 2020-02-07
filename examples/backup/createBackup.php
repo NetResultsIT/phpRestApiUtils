@@ -5,8 +5,8 @@
  *     Roberto Santini         <r.santini@netresults.it>.
  */
 
-require_once 'globals.php';
-require_once 'Utils.php';
+require_once __DIR__.'/../globals.php';
+require_once __DIR__.'/../Utils.php';
 
 // REST API URL
 define('BACKUP_CREATE_URL', 'http://%s/rest/backup/create/%s');
