@@ -47,20 +47,20 @@ if (false === $response) {
 }
 
 // Check the status code
-$responseInfo = $utils->getLastRequestInfo();
-if (404 === $responseInfo['http_code']) {
+$requestData = $utils->getLastRequestInfo();
+if (404 === $requestData['http_code']) {
     // Specific not found error
     echo sprintf("I'm sorry, there isn't any backup named '%s'.\n", $backupName);
     exit(1);
 }
-if (503 === $responseInfo['http_code']) {
+if (503 === $requestData['http_code']) {
     // Returned when a backup restore process is already ongoing or if the lock can not be acquired
     echo "I'm sorry, backup restore process is already ongoing or the lock can not be acquired.\n";
     exit(1);
 }
-if (200 !== $responseInfo['http_code']) {
+if (200 !== $requestData['http_code']) {
     // Other errors
-    echo sprintf("Oops, we have received a %d error with the following response\n\n", $responseInfo['http_code']);
+    echo sprintf("Oops, we have received a %d error with the following response\n\n", $requestData['http_code']);
     echo $response."\n";
     exit(1);
 }
