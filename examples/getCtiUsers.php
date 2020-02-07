@@ -8,11 +8,8 @@
 use NetResults\KalliopePBX\RestApiUtils;
 
 require_once '../vendor/autoload.php';
+require_once 'globals.php';
 
-define('PBX_IP_ADDRESS', 'your.kalliopepbx.address');
-define('TENANT_DOMAIN', 'default');
-define('USERNAME', 'admin');
-define('PASSWORD', 'admin');
 define('GET_CTI_USERS_URL', 'http://%s/rest/ctiUser/');
 
 // Create the RestApiUtils object and generate the authentication header.
