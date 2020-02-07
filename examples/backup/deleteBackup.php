@@ -2,14 +2,14 @@
 /**
  * Copyright (C) 2020 by NetResults S.r.l. ( http://www.netresults.it )
  * Author(s):
- *     Roberto Santini         <r.santini@netresults.it>.
+ *     Roberto Santini         <r.santini@netresults.it>
  */
 
 require_once __DIR__.'/../globals.php';
 require_once __DIR__.'/../Utils.php';
 
 // REST API URL
-define('DOWNLOAD_BACKUP_URL', 'http://%s/rest/backup/%s');
+define('DELETE_BACKUP_URL', 'http://%s/rest/backup/%s');
 
 // For this example we need the CLI to ask the backup name to download
 if ('cli' !== PHP_SAPI) {
@@ -17,11 +17,11 @@ if ('cli' !== PHP_SAPI) {
     exit(1);
 }
 
-// Ask to the user the name of the backup to download
-echo 'Insert the name of the backup you want to download: ';
+// Ask to the user the name of the backup to delete
+echo 'Insert the name of the backup you want to delete: ';
 $backupName = trim(fgets(STDIN));
 if ('' === $backupName) {
-    echo "I'm sorry, I can't download anything if you don't say to me what you want!\n";
+    echo "I'm sorry, I can't delete anything if you don't say to me what you want!\n";
     exit(1);
 }
 if (false !== strpos($backupName, ' ')) {
@@ -29,15 +29,20 @@ if (false !== strpos($backupName, ' ')) {
     exit(1);
 }
 
-echo sprintf("I'm trying to download the backup with name '%s'\n", $backupName);
+echo sprintf("I'm trying to delete the backup with name '%s'\n", $backupName);
 
 // Instantiate the Utils object
 $utils = new Utils();
 
-// Download backup
-$response = $utils->executeRequest(sprintf(DOWNLOAD_BACKUP_URL, PBX_IP_ADDRESS, $backupName));
+// Delete backup
+$response = $utils->executeRequest(
+    sprintf(DELETE_BACKUP_URL, PBX_IP_ADDRESS, $backupName),
+    null,
+    [],
+    Utils::REQUEST_TYPE_DELETE
+);
 if (false === $response) {
-    echo "Something went wrong! :(\nBackup not downloaded.\n";
+    echo "Something went wrong! :(\nBackup not deleted.\n";
     exit(1);
 }
 
@@ -55,13 +60,6 @@ if (200 !== $responseInfo['http_code']) {
     exit(1);
 }
 
-$cwd = getcwd();
-if (false === $cwd) {
-    echo "Unable to get the current folder. The backup has been downloaded but I can't save the file.\n";
-    exit(1);
-}
-
-echo sprintf("Saving backup file '%s'\n", $cwd.DIRECTORY_SEPARATOR.$backupName);
-file_put_contents($cwd.DIRECTORY_SEPARATOR.$backupName, $response);
+echo sprintf("Backup file '%s' deleted correctly.\n", $backupName);
 
 echo "Done\n";
