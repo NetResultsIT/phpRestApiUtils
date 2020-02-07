@@ -66,6 +66,7 @@ if ($saveBackupToDisk) {
     $cwd = getcwd();
     if (false === $cwd) {
         echo "Unable to get the current folder, you can find the backup in the KalliopePBX backup panel.\n";
+        exit(1);
     }
     echo sprintf("Saving backup file '%s'\n", $backupName);
     file_put_contents($cwd.DIRECTORY_SEPARATOR.$backupName, $response);
