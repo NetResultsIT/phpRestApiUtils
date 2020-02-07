@@ -14,6 +14,11 @@ class Utils
     private const DEFAULT_ACCEPT_HEADER = 'Accept: application/json';
     private const GET_FIRMWARE_VERSION_URL = 'http://%s/rest/dashboard/firmwareVersion';
 
+    public const REQUEST_TYPE_DELETE = 'DELETE';
+    public const REQUEST_TYPE_GET = 'GET';
+    public const REQUEST_TYPE_POST = 'POST';
+    public const REQUEST_TYPE_PUT = 'PUT';
+
     /**
      * @var RestApiUtils
      */
@@ -51,15 +56,31 @@ class Utils
      * @param string      $requestUrl
      * @param string|null $postData
      * @param array       $headers
+     * @param string      $type
      *
      * @return bool|string
      */
-    public function executeRequest(string $requestUrl, ?string $postData = null, array $headers = [])
-    {
+    public function executeRequest(
+        string $requestUrl,
+        ?string $postData = null,
+        array $headers = [],
+        string $type = Utils::REQUEST_TYPE_GET
+    ) {
         if ('' === $requestUrl) {
             // Invalid URL
             return false;
         }
+
+        // Check if $type is valid, if not force to GET
+        $type = in_array($type,
+            [
+                static::REQUEST_TYPE_DELETE,
+                static::REQUEST_TYPE_GET,
+                static::REQUEST_TYPE_POST,
+                static::REQUEST_TYPE_PUT,
+            ],
+            true
+        ) ? $type : static::REQUEST_TYPE_GET;
 
         // Init the cURL object to do the REST API request
         $ch = curl_init($requestUrl);
@@ -67,8 +88,13 @@ class Utils
         // Handle POST data
         if (null !== $postData && '' !== $postData) {
             // We assume that the $headers already contains the 'Content-Type' header with the right value.
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
             curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+
+            // The request type can't be GET with a post data. If $type is GET we force the request to be a POST.
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, (static::REQUEST_TYPE_GET !== $type) ? $type : static::REQUEST_TYPE_POST);
+        } else {
+            // Sets the request type according to the $type parameter.
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $type);
         }
 
         // Add the headers to the request
