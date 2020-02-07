@@ -5,8 +5,8 @@
  *     Roberto Santini         <r.santini@netresults.it>.
  */
 
-require_once 'globals.php';
-require_once 'Utils.php';
+require_once __DIR__.'/../globals.php';
+require_once __DIR__.'/../Utils.php';
 
 // REST API URL
 define('BACKUP_CREATE_URL', 'http://%s/rest/backup/create/%s');
@@ -66,9 +66,10 @@ if ($saveBackupToDisk) {
     $cwd = getcwd();
     if (false === $cwd) {
         echo "Unable to get the current folder, you can find the backup in the KalliopePBX backup panel.\n";
+        exit(1);
     }
     echo sprintf("Saving backup file '%s'\n", $backupName);
-    file_put_contents($cwd.'/'.$backupName, $response);
+    file_put_contents($cwd.DIRECTORY_SEPARATOR.$backupName, $response);
 }
 
 echo "Done\n";

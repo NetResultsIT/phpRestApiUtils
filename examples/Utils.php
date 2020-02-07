@@ -6,18 +6,42 @@
  */
 use NetResults\KalliopePBX\RestApiUtils;
 
-require_once '../vendor/autoload.php';
-require_once 'globals.php';
+require_once __DIR__.'/../vendor/autoload.php';
 
 class Utils
 {
     private const DEFAULT_ACCEPT_HEADER = 'Accept: application/json';
     private const GET_FIRMWARE_VERSION_URL = 'http://%s/rest/dashboard/firmwareVersion';
 
+    public const REQUEST_TYPE_DELETE = 'DELETE';
+    public const REQUEST_TYPE_GET = 'GET';
+    public const REQUEST_TYPE_POST = 'POST';
+    public const REQUEST_TYPE_PUT = 'PUT';
+
     /**
      * @var RestApiUtils
      */
     private $restApiUtils;
+
+    /**
+     * @var string
+     */
+    private $pbxIpAddress = '';
+
+    /**
+     * @var string
+     */
+    private $username = '';
+
+    /**
+     * @var string
+     */
+    private $password = '';
+
+    /**
+     * @var string
+     */
+    private $tenantDomain = '';
 
     /**
      * @var array
@@ -26,9 +50,38 @@ class Utils
 
     /**
      * Utils constructor.
+     *
+     * @param string $pbxIpAddress
+     * @param string $username
+     * @param string $password
+     * @param string $tenantDomain
      */
-    public function __construct()
+    public function __construct(string $pbxIpAddress = '', string $username = '', string $password = '', string $tenantDomain = '')
     {
+        if ('' !== $pbxIpAddress) {
+            $this->pbxIpAddress = $pbxIpAddress;
+        } elseif (defined('PBX_IP_ADDRESS')) {
+            $this->pbxIpAddress = PBX_IP_ADDRESS;
+        }
+
+        if ('' !== $username) {
+            $this->username = $username;
+        } elseif (defined('USERNAME')) {
+            $this->username = USERNAME;
+        }
+
+        if ('' !== $password) {
+            $this->password = $password;
+        } elseif (defined('PASSWORD')) {
+            $this->password = PASSWORD;
+        }
+
+        if ('' !== $tenantDomain) {
+            $this->tenantDomain = $tenantDomain;
+        } elseif (defined('TENANT_DOMAIN')) {
+            $this->tenantDomain = TENANT_DOMAIN;
+        }
+
         $this->restApiUtils = new RestApiUtils();
     }
 
@@ -39,7 +92,7 @@ class Utils
      */
     public function getFirmwareVersion(): string
     {
-        $requestUrl = sprintf(static::GET_FIRMWARE_VERSION_URL, PBX_IP_ADDRESS);
+        $requestUrl = sprintf(static::GET_FIRMWARE_VERSION_URL, $this->getPbxIpAddress());
         $fwVersion = $this->executeRequest($requestUrl);
 
         return false !== $fwVersion ? $fwVersion : '';
@@ -48,27 +101,48 @@ class Utils
     /**
      * Sends the request to KalliopePBX and returns the response. Returns false if something went wrong.
      *
-     * @param string      $requestUrl
-     * @param string|null $postData
-     * @param array       $headers
+     * @param string            $requestUrl
+     * @param array|string|null $postData
+     * @param array             $headers
+     * @param string            $type
      *
      * @return bool|string
      */
-    public function executeRequest(string $requestUrl, ?string $postData = null, array $headers = [])
-    {
+    public function executeRequest(
+        string $requestUrl,
+        $postData = null,
+        array $headers = [],
+        string $type = Utils::REQUEST_TYPE_GET
+    ) {
         if ('' === $requestUrl) {
             // Invalid URL
             return false;
         }
 
+        // Check if $type is valid, if not force to GET
+        $type = in_array($type,
+            [
+                static::REQUEST_TYPE_DELETE,
+                static::REQUEST_TYPE_GET,
+                static::REQUEST_TYPE_POST,
+                static::REQUEST_TYPE_PUT,
+            ],
+            true
+        ) ? $type : static::REQUEST_TYPE_GET;
+
         // Init the cURL object to do the REST API request
         $ch = curl_init($requestUrl);
 
         // Handle POST data
-        if (null !== $postData && '' !== $postData) {
+        if (null !== $postData) {
             // We assume that the $headers already contains the 'Content-Type' header with the right value.
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
             curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+
+            // The request type can't be GET with a post data. If $type is GET we force the request to be a POST.
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, (static::REQUEST_TYPE_GET !== $type) ? $type : static::REQUEST_TYPE_POST);
+        } else {
+            // Sets the request type according to the $type parameter.
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $type);
         }
 
         // Add the headers to the request
@@ -127,10 +201,10 @@ class Utils
         if (!$xAuthPresent) {
             // Authentication header not present, generate and add it.
             $headers[] = RestApiUtils::X_AUTHENTICATE_HEADER_NAME.': '.$this->restApiUtils->generateAuthHeader(
-                    USERNAME,
-                    TENANT_DOMAIN,
-                    PASSWORD,
-                    $this->restApiUtils->getTenantSalt(TENANT_DOMAIN, PBX_IP_ADDRESS),
+                    $this->getUsername(),
+                    $this->getTenantDomain(),
+                    $this->getPassword(),
+                    $this->restApiUtils->getTenantSalt($this->getTenantDomain(), $this->getPbxIpAddress()),
                     false
                 );
         }
@@ -144,5 +218,85 @@ class Utils
     public function getLastRequestInfo(): array
     {
         return $this->lastRequestInfo;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPbxIpAddress(): string
+    {
+        return $this->pbxIpAddress;
+    }
+
+    /**
+     * @param string $pbxIpAddress
+     *
+     * @return Utils
+     */
+    public function setPbxIpAddress(string $pbxIpAddress): Utils
+    {
+        $this->pbxIpAddress = $pbxIpAddress;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUsername(): string
+    {
+        return $this->username;
+    }
+
+    /**
+     * @param string $username
+     *
+     * @return Utils
+     */
+    public function setUsername(string $username): Utils
+    {
+        $this->username = $username;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    /**
+     * @param string $password
+     *
+     * @return Utils
+     */
+    public function setPassword(string $password): Utils
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTenantDomain(): string
+    {
+        return $this->tenantDomain;
+    }
+
+    /**
+     * @param string $tenantDomain
+     *
+     * @return Utils
+     */
+    public function setTenantDomain(string $tenantDomain): Utils
+    {
+        $this->tenantDomain = $tenantDomain;
+
+        return $this;
     }
 }
