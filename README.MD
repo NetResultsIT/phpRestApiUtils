@@ -38,10 +38,10 @@ echo $restApiUtils->generateAuthHeader('admin', 'default', 'admin', $tenantSalt)
 
 #### Esempi
 
-Nella catella `examples` sono presenti alcuni script di esmpio di utilizzo delle API. Ogni script ha delle `DEFINE` per la definizione dei parametri, modificarli secondo le proprie necessità per rendere gli esempi funzionanti nei propri scenari.
+Nella catella `examples` sono presenti alcuni script di esmpio di utilizzo delle API. E' presente il file `globals.php` nel quale sono presenti delle `DEFINE` con dei parametri globali utilizzati dagli script di esempio. Modificare i valori delle `DEFINE` secondo le proprie necessità per rendere gli esempi funzionanti nei propri scenari.
 
 ```bash
 cd examples
-# Modificare i valori delle DEFINE negli script
+# Modificare i valori delle DEFINE in globals.php
 php <script.php>
 ```
