@@ -53,16 +53,16 @@ class Utils
     /**
      * Sends the request to KalliopePBX and returns the response. Returns false if something went wrong.
      *
-     * @param string      $requestUrl
-     * @param string|null $postData
-     * @param array       $headers
-     * @param string      $type
+     * @param string            $requestUrl
+     * @param array|string|null $postData
+     * @param array             $headers
+     * @param string            $type
      *
      * @return bool|string
      */
     public function executeRequest(
         string $requestUrl,
-        ?string $postData = null,
+        $postData = null,
         array $headers = [],
         string $type = Utils::REQUEST_TYPE_GET
     ) {
@@ -86,7 +86,7 @@ class Utils
         $ch = curl_init($requestUrl);
 
         // Handle POST data
-        if (null !== $postData && '' !== $postData) {
+        if (null !== $postData) {
             // We assume that the $headers already contains the 'Content-Type' header with the right value.
             curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
 
