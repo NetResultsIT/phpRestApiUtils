@@ -40,8 +40,10 @@ try {
 echo sprintf("Tying to create a new backup with name '%s' for firmware version %s\n", $backupName, $fwVersion);
 
 $requestBody = [
-    'filename' => $backupName,
-    'comment' => '',
+    'backup' => [
+        'filename' => $backupName,
+        'comment' => '',
+    ],
 ];
 
 // Execute the request
