@@ -55,8 +55,10 @@ echo sprintf(
 );
 
 $requestBody = [
-    'filename' => $backupName,
-    'comment' => '',
+    'backup' => [
+        'filename' => $backupName,
+        'comment' => '',
+    ],
 ];
 
 // Execute the request
